@@ -1,0 +1,139 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Times New Roman;}{\f1\fnil\fcharset2 Symbol;}}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\b\f0\fs20\lang9 Sqoop Basics:\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 It is a tool use to transfer data from rdbms to hdfs and hdfs to rdbms\b\par
+{\pntext\f1\'B7\tab}\b0 If you want to transfer data from database to hdfs then you need to use sqoop import\b\par
+{\pntext\f1\'B7\tab}\b0 To tranfer data from hdfs to rdbms then you use sqoop export\b\par
+
+\pard\sa200\sl276\slmult1 Key Features of Sqoop:\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 Full load\b\par
+{\pntext\f1\'B7\tab}\b0 Incremental Load\b\par
+{\pntext\f1\'B7\tab}\b0 Parallel import/export\b\par
+{\pntext\f1\'B7\tab}\b0 Compression\b\par
+{\pntext\f1\'B7\tab}\b0 Security Integration\b\par
+{\pntext\f1\'B7\tab}\b0 Load data directly into Hive/Hbase\b\par
+
+\pard\sa200\sl276\slmult1 Sqoop Import:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Sqoop import imports individual tables from rdbms to hdfs\b\par
+{\pntext\f1\'B7\tab}\b0 Each row in a table is treated as a record in hdfs\b\par
+{\pntext\f1\'B7\tab}\b0 Records can be stored as textfile format, sequence file format, avro and parquet like format\b\par
+
+\pard\sa200\sl276\slmult1 Sqoop Export:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Sqoop export exports a set of files from hdfs to rdbms\b\par
+{\pntext\f1\'B7\tab}\b0 The target table must already exists in database\b\par
+{\pntext\f1\'B7\tab}\b0 Files are read & parsed into set of records according to user specified delimeters.\b\par
+
+\pard\sa200\sl276\slmult1\par
+------------------------------------------------------------------------------------------------------------------------\par
+\b0\par
+To enter into mysql:\par
+mysql -u root -p, mysql -u retail_dba -p\par
+pass: cloudera\par
+use retail_db;\par
+\par
+\par
+\b sqoop list command\b0 :\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 sqoop-list-databases \\\line --connect "jdbc:mysql://quickstart.cloudera:3306" \\\line --username retail_dba \\\line --password cloudera\par
+
+\pard\sa200\sl276\slmult1\b sqoop displaying table data using eval:\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 sqoop-eval \\\line --connect "jdbc:mysql://quickstart.cloudera:3306" \\\line --username retail_dba \\\line --password cloudera \\\line --query "select * from retail_db.customers limit 10"\par
+
+\pard\sa200\sl276\slmult1\par
+ifconfig\par
+insert into person values\line (101, 'rao', 'mohan',  'whitefield', 'bangalore')\par
+\par
+\b Sqoop Import\b0 (transfer data from your rdbms to hdfs)\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 It is a Mapreduce job it is special mapreduce job because here only mappers work (as no aggregation or transofrmation work only transfer of data is happening)  \par
+{\pntext\f1\'B7\tab}only mappers work here and no reducer.\par
+{\pntext\f1\'B7\tab}by default 4 mappers/threads will work (which will be running parallel)\par
+{\pntext\f1\'B7\tab}we can change these number of mappers but by default it is 4\par
+{\pntext\f1\'B7\tab}these mappers divide the work based on primary key\par
+{\pntext\f1\'B7\tab}if there is no primary key (then sqoop doesn't know how to divide the work as there is no primary key in source table) so in this case either \b change number of mappers to 1 \b0 or use \b split by column\b0 (where you will define the column name to do the number of division based on that specific column) as in first case it would be okay if table table is not large but not okay when we have large amount of data in table.\par
+
+\pard\sa200\sl276\slmult1      \b command\b0 :\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 sqoop-import \\\line --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \\\line --username root \\\line --password cloudera \\\line --table orders \\\line --target-dir /queryresult\par
+{\pntext\f1\'B7\tab}check from hdfs: hadoop fs -ls /queryresult (By default 4 mappers so 4 files are available in destination -> hdfs)\par
+{\pntext\f1\'B7\tab}read all data from hdfs which is imported: hadoop fs -cat /queryresult/*\line\par
+
+\pard\sa200\sl276\slmult1\b      Case when no primary key:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 sqoop-import \\\b\line\b0 --conect "jdbc:mysql://quickstart.cloudera:3306/trendytech" \\\b\line\b0 --username root \\\b\line\b0 --password cloudera \\\b\line\b0 --table person \\\b\line\b0 --target-dir /peopleresult\b\line\line\b0 we will get error either perform sequential import with one mapper '-m 1' or specify with \b\line\b0 --split-by\b\line\line\b0 To fix it with one mapper use this:\b\par
+{\pntext\f1\'B7\tab}\b0 sqoop-import \\\b\line\b0 --conect "jdbc:mysql://quickstart.cloudera:3306/trendytech" \\\b\line\b0 --username root \\\b\line\b0 --password cloudera \\\b\line\b0 --table person \\\b\line\b0 -m 1 \\\b\line\b0 --target-dir /peopleresult1\b\line\line\b0 To see file: hadoop fs -ls /personresult1   (only one file will be there because mapper is one)\b\line\b0 To see content of file: hadoop fs -cat /personresult1/*\b\line\par
+
+\pard\sa200\sl276\slmult1 Case when you want to import all tables from DB:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 sqoop-import-all-tables \\\b\line\b0 --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \\\b\line\b0 --username retail_dba \\\b\line\b0 --password cloudera \\\b\line\b0 --as-sequentialfile \\                (comment by default it is text file but here we are using sequential)\b\line\b0 -m 4 \\\b\line\b0 --warehouse-dir /user/cloudera/sqoopdir\b\par
+
+\pard\sa200\sl276\slmult1 Target vs Warehouse Dir:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 e.g employee table that you are importing from mysql\b\line\line\b0 Incase of target directory the directory path mentioned is final path where data is copied.\b\line\line\b0 /data\b\line\line\b0 Incase of warehouse dir, the system will create a subdirectory with tablename under directory\b\line\b0 /data/..../\b\line\line\b0 final directory looks like:\b\line\b0 /user/cloudera/sqoopdir/employee\b\line\b0 /user/cloudera/sqoopdir/customer\b\line\b0 /user/cloudera/sqoopdir/table3\b\line\b0 /user/cloudera/sqoopdir/table4\b\line\line\b0 Sqoop support 4 file format\b\line\b0 - text file format\b\line\b0 - avro file format\b\line\b0 - sequence file format\b\line\b0 - parquet file format\b\line\line\b0 By default mapers are 4\b\par
+
+\pard\sa200\sl276\slmult1\par
+Sqoop Commands:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 sqoop help\b\par
+{\pntext\f1\'B7\tab}\b0 sqoop version\b\par
+{\pntext\f1\'B7\tab}\b0 sqoop help eval\b\par
+{\pntext\f1\'B7\tab}\b0 sqoop help import     (etc)\b\par
+{\pntext\f1\'B7\tab}\b0 sqoop-list-databases\b\par
+
+\pard\sa200\sl276\slmult1 Sqoop Better Approaches:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 use -P instead --password in sqoop command then it will ask for password run time instead of password in plain text\b\par
+{\pntext\f1\'B7\tab}\b0 similary use -e instead of --query\b\par
+{\pntext\f1\'B7\tab}\b0 you can use -m 4 instead --num-mappers 4 etc\b\par
+
+\pard\sa200\sl276\slmult1 Sqoop Redirecting Log:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 sqoop-import \\\b\line\b0 --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \\\b\line\b0 --username root \\\b\line\b0 -P \\\b\line\b0 --table orders \\\b\line\b0 --warehouse-dir /queryresult4 1>query.out 2>query.err\b\par
+
+\pard\sa200\sl276\slmult1 Boundary Query:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Sqoop import the work is divided among mappers based on primary keys\b\par
+{\pntext\f1\'B7\tab}\b0 By default mapper are 4.\b\par
+{\pntext\f1\'B7\tab}\b0 internally it runs a query where it will try to find max and min of primary key\b\line\line split_size = (\b0 max_of_pk - min_of_pk) / no_of_mappers\b\par
+
+\pard\sa200\sl276\slmult1 Sqoop import execution flow:\par
+\b0 How mappers will divide the work when a sqoop import query is fired:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li1080\sa200\sl276\slmult1 Selects 1 record and by using that it gets the metadata and builds java file\b\par
+{\pntext\f1\'B7\tab}\b0 Using above java file it builds jar file\b\par
+{\pntext\f1\'B7\tab}\b0 BuildingValsQuery based on max and min on primary key\b\par
+{\pntext\f1\'B7\tab}\b0 Calculate (max-min)/no_of_mappers and gets the split size\b\par
+
+\pard\sa200\sl276\slmult1 Sqoop Import Compression Techniques:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 We can compress data by using default gzip algorithm with -z or --compress arguments\b\par
+{\pntext\f1\'B7\tab}\b0 sqoop-import \\\b\line\b0 --connect "jdbc:mysql:quickstart.cloudera:3306/retail_db" \\\b\line\b0 --username retail_dba \\\b\line\b0 --password cloudera \\\b\line\b0 --table orders \\\b\line\b0 --compress \\ (--compression-codec BZip2Codec) or for any other zip format by default it is gzip\b\line\b0 --warehouse-dir /user/cloudera/compressresult\b\par
+
+\pard\sa200\sl276\slmult1 Import data with selected columns:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 sqoop-import \\\b\line\b0 --connect "jdbc:mysql:quickstart.cloudera:3306/retail_db" \\\b\line\b0 --username retail_dba \\\b\line\b0 --password cloudera \\\b\line\b0 --table customers \\\b\line\b0 --columns customer_id, customer_name \\\b\line\b0 --warehouse-dir /user/cloudera/compressresult\b\par
+
+\pard\sa200\sl276\slmult1 Import data with where clause:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 sqoop-import \\\b\line\b0 --connect "jdbc:mysql:quickstart.cloudera:3306/retail_db" \\\b\line\b0 --username retail_dba \\\b\line\b0 --password cloudera \\\b\line\b0 --table customers \\\b\line\b0 --columns customer_id, customer_name \\\b\line --where \b0 "order_status in ('complete', 'closed')" \\\b\line\b0 --warehouse-dir /user/cloudera/location\b\par
+
+\pard\sa200\sl276\slmult1 With Boundary Query Sqoop Import:\par
+\b0 It is used in the case when we have e.g max pk_200000 and earlier we had 1900 max pk so in that scenario when it will be divided by mappers then some of mappers will not work and some of mappers will have to work alot (so we are not using our resouces efficiently)\b\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 sqoop-import \\\b\line\b0 --connect "jdbc:mysql:quickstart.cloudera:3306/retail_db" \\\b\line\b0 --username retail_dba \\\b\line\b0 --password cloudera \\\b\line\b0 --table customers \\\b\line\b0 --boundary-query "SELECT 1, 68883"\b\line\b0 --warehouse-dir /user/cloudera/location\b\par
+
+\pard\sa200\sl276\slmult1\b0 We can customize the min and max value using non primary key column as well\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 sqoop-import \\\b\line\b0 --connect "jdbc:mysql:quickstart.cloudera:3306/retail_db" \\\b\line\b0 --username retail_dba \\\b\line\b0 --password cloudera \\\b\line\b0 --table orders \\\b\line\b0 --boundary-query "SELECT min(order_item_id), max(order_item_id) from order_items where order_item_id ge 10000" \\\b\line\b0 --warehouse-dir /user/cloudera/location\b\par
+
+\pard\sa200\sl276\slmult1\par
+\b0 Important point: Whatever we write in where clause will also be a part of boundary query\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 sqoop-import \\\b\line\b0 --connect "jdbc:mysql:quickstart.cloudera:3306/retail_db" \\\b\line\b0 --username retail_dba \\\b\line\b0 --password cloudera \\\b\line\b0 --table orders \\\b\line\b0 --columns order_id, customer_id, order_status \\\b\line\b0 --where "order_status in ('processing')" \\\b\line\b0 --warehouse-dir /user/cloudera/location\b\line\line\line\b0 Backend it will be written as: "SELECT min(order_id), max(order_id) from order where order_status in ('processing')\b\par
+}
+ 
